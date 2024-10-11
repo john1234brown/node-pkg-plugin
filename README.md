@@ -150,5 +150,6 @@ For any questions or inquiries, please contact Johnathan Edward Brown at sierraj
 
 - [Webpack](https://webpack.js.org/)
 - [Node.js Single Executable Applications](https://nodejs.org/en/docs/guides/single-executable-applications/)
+- AI generated code snippets for webpack examples and project setup.
 
 Author: Johnathan Edward Brown
