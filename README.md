@@ -152,6 +152,6 @@ For any questions or inquiries, please contact Johnathan Edward Brown at sierraj
 - [Node.js Single Executable Applications](https://nodejs.org/en/docs/guides/single-executable-applications/)
 
 ## Credits
-AI generated code snippets for webpack examples and project setup included in this README.md
+- AI Model for generated code snippets for webpack examples and project setup included in this README.md
 
-Author: Johnathan Edward Brown
+- Author: Johnathan Edward Brown
