@@ -62,7 +62,23 @@ The plugin allows you to specify the input filename and the output filename pref
 
 ## External Node Modules
 
-If your project uses external Node modules, ensure your Webpack configuration properly caches all modules. Failing to do so may result in a non-functional binary. For more details, refer to the [Node.js Single Executable Applications documentation](https://nodejs.org/en/docs/guides/single-executable-applications/).
+If your project uses external Node modules, ensure your Webpack configuration properly caches all modules. Failing to do so may result in a non-functional binary. For more details, refer to the [Node.js Single Executable Applications documentation](https://nodejs.org/en/docs/guides/single-executable-applications/),also you can refer to the Webpack documentation on caching [here](https://webpack.js.org/guides/caching/).
+
+For caching node modules, you can use the `cache` option in your Webpack configuration file like this:
+
+```javascript
+module.exports = {
+  // other configurations...
+  cache: {
+    type: 'filesystem', // Enables filesystem caching
+    buildDependencies: {
+      config: [__filename], // Add your config as a build dependency
+    },
+  },
+};
+```
+
+This will cache the node modules and other build dependencies to speed up subsequent builds. For more detailed information, refer to the Webpack caching guide linked above.
 
 ## Example
 
