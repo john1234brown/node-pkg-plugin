@@ -1,0 +1,24 @@
+{
+  "name": "node-pkg-plugin",
+  "version": "1.0.0",
+  "description": "Webpack Plugin For the Newer NodeJS v22.9.0 Single Executable Bundling Process Provided By Johnathan Edward Brown!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/john1234brown/node-pkg-plugin.git"
+  },
+  "keywords": [
+    "Webpack",
+    "Plugin",
+    "Executable"
+  ],
+  "author": "Johnathan Edward Brown",
+  "license": "X11",
+  "bugs": {
+    "url": "https://github.com/john1234brown/node-pkg-plugin/issues"
+  },
+  "homepage": "https://github.com/john1234brown/node-pkg-plugin#readme"
+}
