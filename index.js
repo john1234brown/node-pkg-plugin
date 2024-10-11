@@ -31,9 +31,18 @@ const crypto = require('crypto');
  * @class NodePkgPlugin
  */
 class NodePkgPlugin {
+    fileName;
+    outputFilename;
+
+    constructor(fileName = 'app.js', outputFileName = 'app-'){
+        this.fileName = fileName;
+        this.outputFilename = this.outputFilename;
+    }
+
+
     apply(compiler) {
         compiler.hooks.afterEmit.tapPromise('NodePkgPlugin', async (compilation) => {
-            const outputPath = path.resolve(compiler.options.output.path, 'app.js');
+            const outputPath = path.resolve(compiler.options.output.path, this.fileName);
 
             // Define the target platforms
             const targets = [
@@ -44,11 +53,11 @@ class NodePkgPlugin {
 
             try {
                 for (const target of targets) {
-                    const outputFilePath = path.resolve(compiler.options.output.path, 'app-' + target);
+                    const outputFilePath = path.resolve(compiler.options.output.path, this.outputFilename + target);
                     const seaConfigPath = path.resolve(compiler.options.output.path, 'sea-config.json');
                     const seaPrepBlobPath = path.resolve(compiler.options.output.path, 'sea-prep.blob');
                     const nodeBinaryPath = path.resolve(compiler.options.output.path, 'node-' + target);
-                    const finalBinaryPath = path.resolve(compiler.options.output.path, 'app-' + target);
+                    const finalBinaryPath = path.resolve(compiler.options.output.path, this.outputFilename + target);
 
                     // Create SEA configuration
                     const seaConfig = {

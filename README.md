@@ -28,7 +28,7 @@ To use the NodePkgPlugin in your Webpack configuration, follow these steps:
               path: path.resolve(__dirname, 'dist')
          },
          plugins: [
-              new NodePkgPlugin()
+              new NodePkgPlugin('app.js', 'app-')
          ]
     };
     ```
@@ -58,7 +58,7 @@ To use the NodePkgPlugin in your Webpack configuration, follow these steps:
 
 ## Configuration
 
-The plugin does not require any additional configuration. It will automatically generate the necessary files and executables based on the Webpack output settings.
+The plugin allows you to specify the input filename and the output filename prefix through its constructor. By default, it uses `app.js` as the input filename and `app-` as the output filename prefix. You can customize these values as shown in the example above.
 
 ## External Node Modules
 
@@ -105,7 +105,7 @@ Here is an example of a simple Webpack project setup:
                  path: path.resolve(__dirname, 'dist')
             },
             plugins: [
-                 new NodePkgPlugin()
+                 new NodePkgPlugin('app.js', 'app-')
             ]
       };
       ```
@@ -136,4 +136,3 @@ For any questions or inquiries, please contact Johnathan Edward Brown at sierraj
 - [Node.js Single Executable Applications](https://nodejs.org/en/docs/guides/single-executable-applications/)
 
 Author: Johnathan Edward Brown
-
