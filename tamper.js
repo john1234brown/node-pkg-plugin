@@ -4,7 +4,7 @@ const crypto = require('crypto');
 function verifySourceIntegrity() {
     try {
         // Load the JavaScript source code from SEA assets
-        const jsSource = getAsset('phoenixBox.js');
+        const jsSource = getAsset('app.js');
         const jsSourceContent = Buffer.from(jsSource).toString('utf8');
 //        console.log('JavaScript source code:', jsSourceContent);
         // Load the hash from SEA assets
