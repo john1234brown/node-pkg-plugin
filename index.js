@@ -17,18 +17,21 @@ const { spawn } = require('child_process');
 
 class NodePkgPlugin {
     fileName = 'app.js';
-    outputFilename = 'app-';
+    outputFilename = 'app';
     tamperFile = 'tamper.js';
     tamperBinaryFile = 'tamperBinary.js';
     typescript = false;
 
-    constructor(fileName = 'app.js', outputFileName = 'app-', typescript = false){
+    constructor(fileName = 'app.js', outputFileName = 'app', typescript = false){
         this.fileName = fileName;
-        this.outputFilename = outputFileName;
+        this.outputFilename = outputFileName+"-";
         this.typescript = typescript;
         if (this.typescript){
             this.tamperFile = 'tamper.ts';
             this.tamperBinaryFile = 'tamperBinary.ts';
+        }else{
+            this.tamperFile = 'tamper.js';
+            this.tamperBinaryFile = 'tamperBinary.js';
         }
     }
 
@@ -46,13 +49,15 @@ class NodePkgPlugin {
             // Write the updated content back to the tamper.js file
             await fs.promises.writeFile(tamperFilePath, tamperContent, 'utf8');
 
-            async function updateEntries(){
-                console.log('Original Entry:', entry); // Debug statement
+            async function updateEntries(t){
+                console.log('Original Entry:', compiler.options.entry); // Debug statement
       
-                console.log('Additional Entries:', this.tamperFile); // Debug statement
-                const tamperFilePath = path.resolve(__dirname, this.tamperFile);
-                const tamperBinaryFilePath = path.resolve(__dirname, this.tamperBinaryFile);
+                console.log('Additional Entries:', t.tamperFile); // Debug statement
+                const tamperFilePath = path.resolve(__dirname, t.tamperFile);
+                const tamperBinaryFilePath = path.resolve(__dirname, t.tamperBinaryFile);
                 
+                const entry = compiler.options.entry;
+
                 if (typeof entry === 'string') {
                   compiler.options.entry = [tamperFilePath, tamperBinaryFilePath, entry];
                 } else if (Array.isArray(entry)) {
@@ -72,7 +77,7 @@ class NodePkgPlugin {
             }
 
             // Update the entry to include the tamper.js file
-            await updateEntries();
+            await updateEntries(this);
         });
 
         compiler.hooks.afterEmit.tapPromise('NodePkgPlugin', async () => {
