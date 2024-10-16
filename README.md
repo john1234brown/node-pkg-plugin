@@ -1,5 +1,5 @@
 # NodePkgPlugin
-**NodePkgPlugin is a Webpack plugin that generates single executable applications for multiple platforms (Linux, macOS, Windows) by leveraging Node.js SEA (Single Executable Applications) feature.**
+**NodePkgPlugin is a Webpack and Rollup plugin that generates single executable applications for multiple platforms (Linux, macOS, Windows) by leveraging Node.js SEA (Single Executable Applications) feature.**
 - ***Warning: The Final output binaries will include -hash.txt files if you plan to rename them you must rename the -hash.txt files if not the binaries won't work!***
 - ***Which the final output binary name is configurable see further below for more information on this!***
 
@@ -12,6 +12,8 @@ npm install --save-dev node-pkg-plugin
 ```
 
 ## Usage
+
+### Webpack
 
 To use the NodePkgPlugin in your Webpack configuration, follow these steps:
 
@@ -58,24 +60,70 @@ To use the NodePkgPlugin in your Webpack configuration, follow these steps:
 
   This will create the executables for Linux, macOS, and Windows in the `dist` directory.
 
+### Rollup
+
+To use the NodePkgPlugin in your Rollup configuration, follow these steps:
+
+1. **Create a Rollup Configuration File**
+
+  Create a `rollup.config.js` file in the root of your project if you don't already have one.
+
+  ```javascript
+  import NodePkgPlugin from 'node-pkg-plugin';
+
+  export default {
+    input: 'src/index.js',
+    output: {
+      file: 'dist/app.js',
+      format: 'cjs'
+    },
+    plugins: [
+      NodePkgPlugin.rollupPlugin('app.js', 'app-', true) // true if using TypeScript, else omit the last parameter
+    ]
+  };
+  ```
+
+2. **Set Up Your Project Structure**
+
+  Ensure your project has the following structure:
+
+  ```
+  your-project/
+  ├── src/
+  │   └── index.js
+  ├── dist/
+  ├── rollup.config.js
+  └── package.json
+  ```
+
+3. **Build Your Project**
+
+  Run the Rollup build command to generate the single executable applications:
+
+  ```bash
+  npx rollup -c rollup.config.js
+  ```
+
+  This will create the executables for Linux, macOS, and Windows in the `dist` directory.
+
 ## Configuration
 
 The plugin allows you to specify the input filename and the output filename prefix through its constructor. By default, it uses `app.js` as the input filename and `app-` as the output filename prefix. You can customize these values as shown in the example above.
 
 ## External Node Modules
 
-If your project uses external Node modules, ensure your Webpack configuration properly caches all modules. Failing to do so may result in a non-functional binary. For more details, refer to the [Node.js Single Executable Applications documentation](https://nodejs.org/en/docs/guides/single-executable-applications/), also you can refer to the [Webpack documentation on caching](https://webpack.js.org/guides/caching/).
+If your project uses external Node modules, ensure your Webpack or Rollup configuration properly caches all modules. Failing to do so may result in a non-functional binary. For more details, refer to the [Node.js Single Executable Applications documentation](https://nodejs.org/en/docs/guides/single-executable-applications/), also you can refer to the [Webpack documentation on caching](https://webpack.js.org/guides/caching/).
 
-For caching node modules, you can use the `cache` option in your Webpack configuration file like this:
+For caching node modules in Webpack, you can use the `cache` option in your Webpack configuration file like this:
 
 ```javascript
 module.exports = {
   // other configurations...
   cache: {
-  type: 'filesystem', // Enables filesystem caching
-  buildDependencies: {
-    config: [__filename], // Add your config as a build dependency
-  },
+    type: 'filesystem', // Enables filesystem caching
+    buildDependencies: {
+      config: [__filename], // Add your config as a build dependency
+    },
   },
 };
 ```
@@ -164,6 +212,7 @@ For any questions or inquiries, please contact Johnathan Edward Brown at sierraj
 ## References
 
 - [Webpack](https://webpack.js.org/)
+- [Rollup](https://rollupjs.org/)
 - [Node.js Single Executable Applications](https://nodejs.org/en/docs/guides/single-executable-applications/)
 
 ## Credits
