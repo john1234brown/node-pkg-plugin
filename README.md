@@ -23,7 +23,7 @@ To use the NodePkgPlugin in your Webpack configuration, follow these steps:
 
   ```javascript
   const path = require('path');
-  const NodePkgPlugin = require('node-pkg-plugin');
+  const WebpackPkgPlugin = require('node-pkg-plugin');
 
   module.exports = {
      entry: './src/index.js',
@@ -32,7 +32,7 @@ To use the NodePkgPlugin in your Webpack configuration, follow these steps:
         path: path.resolve(__dirname, 'dist')
      },
      plugins: [
-        new NodePkgPlugin('app.js', 'app-', true)//true if using typescript else don't add last parameter defaults to false for CommonJS javascript!
+        new WebpackPkgPlugin('app.js', 'app-', true)//true if using typescript else don't add last parameter defaults to false for CommonJS javascript!
      ]
   };
   ```
@@ -69,7 +69,7 @@ To use the NodePkgPlugin in your Rollup configuration, follow these steps:
   Create a `rollup.config.js` file in the root of your project if you don't already have one.
 
   ```javascript
-  import NodePkgPlugin from 'node-pkg-plugin';
+  import RollupPkgPlugin from 'node-pkg-plugin';
 
   export default {
     input: 'src/index.js',
@@ -78,7 +78,7 @@ To use the NodePkgPlugin in your Rollup configuration, follow these steps:
       format: 'cjs'
     },
     plugins: [
-      NodePkgPlugin.rollupPlugin('app.js', 'app-', true) // true if using TypeScript, else omit the last parameter
+      new RollupPkgPlugin('app.js', 'app-', true) // true if using TypeScript, else omit the last parameter
     ]
   };
   ```
@@ -175,7 +175,7 @@ Here is an example of a simple Webpack project setup:
 
     ```javascript
     const path = require('path');
-    const NodePkgPlugin = require('node-pkg-plugin');
+    const WebpackPkgPlugin = require('node-pkg-plugin');
 
     module.exports = {
       entry: './src/index.js',
@@ -184,7 +184,7 @@ Here is an example of a simple Webpack project setup:
          path: path.resolve(__dirname, 'dist')
       },
       plugins: [
-         new NodePkgPlugin('app.js', 'app-', true)//true if using typescript else don't add last parameter defaults to false for CommonJS javascript!
+         new WebpackPkgPlugin('app.js', 'app-', true)//true if using typescript else don't add last parameter defaults to false for CommonJS javascript!
       ]
     };
     ```
