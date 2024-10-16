@@ -1,5 +1,5 @@
 /* Author: Johnathan Edward Brown
- * Date: 2024-10-13
+ * Date: 2024-10-16
  * Description: This is a webpack plugin that creates a single executable application from a Node.js application.
  * The plugin uses the SEA toolchain to create a single executable application for Linux, macOS, and Windows.
  * The plugin also generates a hash of the JavaScript source code and the binary for verification purposes.
@@ -11,18 +11,15 @@
  * License: X11
  */
 class WebpackPkgPlugin {
+
   constructor(
     fileName = "app.js",
     outputFileName = "app",
-    typescript = false,
-    moduleSystem = "commonjs",
-    useESModules = false
+    typescript = false
   ) {
     this.fileName = fileName;
     this.outputFilename = outputFileName + "-";
     this.typescript = typescript;
-    this.moduleSystem = moduleSystem;
-    this.useESModules = useESModules;
 
     if (this.typescript) {
       this.tamperFile = "tamper.ts";
@@ -31,15 +28,15 @@ class WebpackPkgPlugin {
       this.tamperFile = "tamper.js";
       this.tamperBinaryFile = "tamperBinary.js";
     }
-
-    if (this.useESModules) {
+    try {
+    if (PluginType.esModules) {
       this.importModules();
-    } else {
+    } else if (require !== undefined) {
       this.path = require("path");
       this.fs = require("fs");
       this.crypto = require("crypto");
       this.spawn = require("child_process").spawn;
-    }
+    }}catch(e){this.importModules();}
   }
 
   async importModules() {
@@ -50,10 +47,7 @@ class WebpackPkgPlugin {
   }
 
   async apply(compiler) {
-    if (this.useESModules) {
-      await this.importModules();
-    }
-
+    await this.importModules();
     // Update the entry to include the tamper.js file
     compiler.hooks.beforeCompile.tapPromise("WebpackPkgPlugin", async () => {
       const tamperFilePath = this.path.resolve(__dirname, this.tamperFile);
@@ -483,8 +477,13 @@ class RollupPkgPlugin {
 
   async generateBundle(outputOptions, bundle) {
     await this.importModules();
+  
+    // Debugging statement to log outputOptions
+//    console.log('outputOptions:', outputOptions);
+  
+    // Ensure outputOptions.dir is defined
     if (!outputOptions.file) {
-      throw new Error('outputOptions.file is not defined This can only bundle a single executable file! please specify your main entry file! In your rollup.config.js file!');
+      throw new Error('outputOptions.dir is not defined');
     }
   
     const outputPath = this.path.resolve(this.path.dirname(outputOptions.file));
@@ -767,12 +766,12 @@ class RollupPkgPlugin {
 //Please look at my godbox and blackbox npm package source code for verifications of this tips and tricks.
 if (typeof exports === "object" && typeof module !== "undefined") {
   // CommonJS export for WebpackPkgPlugin
-  module.exports = WebpackPkgPlugin;
+  module.exports = { RollupPkgPlugin, WebpackPkgPlugin };
 } else if (typeof define === "function" && define.amd) {
   // AMD export for WebpackPkgPlugin
   define([], function () {
-    return WebpackPkgPlugin;
+    return { RollupPkgPlugin, WebpackPkgPlugin };
   });
 }
 // ES Module export for RollupPkgPlugin
-export default RollupPkgPlugin;
+export { RollupPkgPlugin, WebpackPkgPlugin };

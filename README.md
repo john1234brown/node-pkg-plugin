@@ -23,7 +23,7 @@ To use the NodePkgPlugin in your Webpack configuration, follow these steps:
 
   ```javascript
   const path = require('path');
-  const WebpackPkgPlugin = require('node-pkg-plugin');
+  const { WebpackPkgPlugin } = require('node-pkg-plugin');
 
   module.exports = {
      entry: './src/index.js',
