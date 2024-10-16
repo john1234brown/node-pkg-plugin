@@ -10,7 +10,6 @@
  * The plugin uses the unlink tool to remove the signature of the binary on macOS.
  * License: X11
  */
-
 class WebpackPkgPlugin {
   constructor(
     fileName = "app.js",
@@ -402,7 +401,11 @@ class WebpackPkgPlugin {
 }
 
 class RollupPkgPlugin {
-  constructor(fileName = "app.js", outputFileName = "app", typescript = false) {
+  constructor(    
+    fileName = "app.js",
+    outputFileName = "app",
+    typescript = false
+  ) {
     this.fileName = fileName;
     this.outputFileName = outputFileName;
     this.typescript = typescript;
@@ -419,7 +422,8 @@ class RollupPkgPlugin {
 
   async buildStart() {
     await this.importModules();
-    const tamperFilePath = this.path.resolve(process.cwd(), this.tamperFile);
+    const __dirname = new URL('.', import.meta.url).pathname;
+    const tamperFilePath = this.path.resolve(__dirname, this.tamperFile);
 
     // Read the tamper.js file
     let tamperContent = await this.fs.promises.readFile(tamperFilePath, "utf8");
@@ -436,41 +440,51 @@ class RollupPkgPlugin {
 
   async generateBundle(outputOptions, bundle) {
     await this.importModules();
-    const outputPath = this.path.resolve(outputOptions.dir, this.fileName);
-
+  
+    // Debugging statement to log outputOptions
+    console.log('outputOptions:', outputOptions);
+  
+    // Ensure outputOptions.dir is defined
+    if (!outputOptions.file) {
+      throw new Error('outputOptions.dir is not defined');
+    }
+  
+    const outputPath = this.path.resolve(outputOptions.file);
+    const outputDir = this.path.resolve(this.path.dirname(outputOptions.file));
+  
     // Generate hash of the JavaScript source code
     const sourceCode = await this.fs.promises.readFile(outputPath, "utf8");
     const sourceHash = this.crypto
       .createHash("sha256")
       .update(sourceCode)
       .digest("hex");
-
+  
     // Write the hash to a file
-    const hashFilePath = this.path.resolve(outputOptions.dir, "hash.txt");
+    const hashFilePath = this.path.resolve(outputDir, "hash.txt");
     await this.fs.promises.writeFile(hashFilePath, sourceHash, "utf8");
-
+  
     // Define the target platforms
     const targets = ["linux", "macos", "win"];
-
+  
     try {
       for (const target of targets) {
         const seaConfigPath = this.path.resolve(
-          outputOptions.dir,
+          outputDir,
           "sea-config.json"
         );
         const seaPrepBlobPath = this.path.resolve(
-          outputOptions.dir,
+          outputDir,
           "sea-prep.blob"
         );
         const nodeBinaryPath = this.path.resolve(
-          outputOptions.dir,
+          outputDir,
           "node-" + target
         );
         const finalBinaryPath = this.path.resolve(
-          outputOptions.dir,
+          outputDir,
           this.outputFileName + target
         );
-
+  
         // Create SEA configuration
         const seaConfig = {
           main: outputPath,
@@ -484,14 +498,14 @@ class RollupPkgPlugin {
           seaConfigPath,
           JSON.stringify(seaConfig)
         );
-
+  
         // Generate the blob to be injected
         await new Promise((resolve, reject) => {
           const seaProcess = this.spawn("node", [
             "--experimental-sea-config",
             seaConfigPath,
           ]);
-
+  
           seaProcess.stdout.on("data", (data) => {
             console.log(
               "SEA blob generation successful for target " +
@@ -500,13 +514,13 @@ class RollupPkgPlugin {
                 data
             );
           });
-
+  
           seaProcess.stderr.on("data", (data) => {
             console.error(
               "SEA blob generation error for target " + target + ": " + data
             );
           });
-
+  
           seaProcess.on("close", (code) => {
             if (code !== 0) {
               reject(
@@ -520,7 +534,7 @@ class RollupPkgPlugin {
             }
           });
         });
-
+  
         // Create a copy of the node executable
         await new Promise((resolve, reject) => {
           const copyCommand =
@@ -529,9 +543,9 @@ class RollupPkgPlugin {
                 nodeBinaryPath +
                 ".exe')\""
               : "cp $(command -v node) " + nodeBinaryPath;
-
+  
           const copyProcess = this.spawn(copyCommand, { shell: true });
-
+  
           copyProcess.stdout.on("data", (data) => {
             console.log(
               "Node.js binary copy successful for target " +
@@ -540,13 +554,13 @@ class RollupPkgPlugin {
                 data
             );
           });
-
+  
           copyProcess.stderr.on("data", (data) => {
             console.error(
               "Node.js binary copy error for target " + target + ": " + data
             );
           });
-
+  
           copyProcess.on("close", (code) => {
             if (code !== 0) {
               reject(
@@ -560,7 +574,7 @@ class RollupPkgPlugin {
             }
           });
         });
-
+  
         // Remove the signature of the binary (macOS only)
         if (process.platform === "darwin") {
           await new Promise((resolve, reject) => {
@@ -568,7 +582,7 @@ class RollupPkgPlugin {
               "--remove-signature",
               nodeBinaryPath,
             ]);
-
+  
             removeSignatureProcess.stdout.on("data", (data) => {
               console.log(
                 "Removing signature successful for target " +
@@ -577,13 +591,13 @@ class RollupPkgPlugin {
                   data
               );
             });
-
+  
             removeSignatureProcess.stderr.on("data", (data) => {
               console.error(
                 "Removing signature error for target " + target + ": " + data
               );
             });
-
+  
             removeSignatureProcess.on("close", (code) => {
               if (code !== 0) {
                 reject(
@@ -598,7 +612,7 @@ class RollupPkgPlugin {
             });
           });
         }
-
+  
         // Inject the blob into the copied binary
         await new Promise((resolve, reject) => {
           let postjectCommand = "npx postject " + nodeBinaryPath;
@@ -609,27 +623,27 @@ class RollupPkgPlugin {
             " NODE_SEA_BLOB " +
             seaPrepBlobPath +
             " --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2";
-
+  
           if (process.platform === "darwin") {
             postjectCommand += " --macho-segment-name NODE_SEA";
           }
-
+  
           const postjectProcess = this.spawn(postjectCommand, {
             shell: true,
           });
-
+  
           postjectProcess.stdout.on("data", (data) => {
             console.log(
               "Blob injection successful for target " + target + "! " + data
             );
           });
-
+  
           postjectProcess.stderr.on("data", (data) => {
             console.error(
               "Blob injection error for target " + target + ": " + data
             );
           });
-
+  
           postjectProcess.on("close", (code) => {
             if (code !== 0) {
               reject(
@@ -643,7 +657,7 @@ class RollupPkgPlugin {
             }
           });
         });
-
+  
         // Sign the binary (macOS only)
         if (process.platform === "darwin") {
           await new Promise((resolve, reject) => {
@@ -652,19 +666,19 @@ class RollupPkgPlugin {
               "-",
               nodeBinaryPath,
             ]);
-
+  
             signProcess.stdout.on("data", (data) => {
               console.log(
                 "Signing binary successful for target " + target + "! " + data
               );
             });
-
+  
             signProcess.stderr.on("data", (data) => {
               console.error(
                 "Signing binary error for target " + target + ": " + data
               );
             });
-
+  
             signProcess.on("close", (code) => {
               if (code !== 0) {
                 reject(
@@ -679,20 +693,20 @@ class RollupPkgPlugin {
             });
           });
         }
-
+  
         // Rename the final binary
         this.fs.renameSync(nodeBinaryPath, finalBinaryPath);
-
+  
         // Generate hash of the binary
         const binaryContent = this.fs.readFileSync(finalBinaryPath);
         const hash = this.crypto
           .createHash("sha256")
           .update(binaryContent)
           .digest("hex");
-
+  
         // Write the hash to a file in the libs folder
         const binaryHashFilePath = this.path.resolve(
-          outputOptions.dir,
+          outputDir,
           this.path.basename(finalBinaryPath) + "-hash.txt"
         );
         this.fs.writeFileSync(binaryHashFilePath, hash);

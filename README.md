@@ -78,7 +78,11 @@ To use the NodePkgPlugin in your Rollup configuration, follow these steps:
       format: 'cjs'
     },
     plugins: [
-      new RollupPkgPlugin('app.js', 'app-', true) // true if using TypeScript, else omit the last parameter
+      {
+        name: 'rollup-pkg-plugin',
+        buildStart: rollupPkgPlugin.buildStart.bind(rollupPkgPlugin),
+        generateBundle: rollupPkgPlugin.generateBundle.bind(rollupPkgPlugin),
+      }
     ]
   };
   ```
