@@ -401,7 +401,7 @@ class WebpackPkgPlugin {
   }
 }
 
-class RollupPkgNodePlugin {
+class RollupPkgPlugin {
   constructor(fileName = "app.js", outputFileName = "app", typescript = false) {
     this.fileName = fileName;
     this.outputFileName = outputFileName;
