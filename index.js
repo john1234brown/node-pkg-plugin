@@ -711,7 +711,6 @@ class RollupPkgNodePlugin {
 //This is a good way to properly export a plugin for both Webpack and Rollup.
 //Please look at my godbox and blackbox npm package source code for verifications of this tips and tricks.
 if (typeof exports === "object" && typeof module !== "undefined") {
-  const WebpackPkgPlugin = require("./index.js");
   // CommonJS export for WebpackPkgPlugin
   module.exports = WebpackPkgPlugin;
 } else if (typeof define === "function" && define.amd) {
@@ -720,7 +719,5 @@ if (typeof exports === "object" && typeof module !== "undefined") {
     return WebpackPkgPlugin;
   });
 }
-// Import both plugins
-import RollupPkgPlugin from "./index2.js";
 // ES Module export for RollupPkgPlugin
 export default RollupPkgPlugin;
