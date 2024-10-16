@@ -22,11 +22,11 @@ class WebpackPkgPlugin {
     this.typescript = typescript;
 
     if (this.typescript) {
-      this.tamperFile = "tamper.ts";
-      this.tamperBinaryFile = "tamperBinary.ts";
+      this.tamperFile = "tamperTs/tamper.ts";
+      this.tamperBinaryFile = "tamperTs/tamperBinary.ts";
     } else {
-      this.tamperFile = "tamper.js";
-      this.tamperBinaryFile = "tamperBinary.js";
+      this.tamperFile = "tamperJs/tamper.js";
+      this.tamperBinaryFile = "tamperJs/tamperBinary.js";
     }
     try {
     if (PluginType.esModules) {
@@ -416,10 +416,12 @@ class RollupPkgPlugin {
     this.spawn = (await import("child_process")).spawn;
   }
 
-  async buildStart() {
+  async buildStart(i) {
+    console.log(i);
+    console.log('I,', i.input);
     await this.importModules();
-    const __dirname = new URL('.', import.meta.url).pathname;
-    const tamperFilePath = this.path.resolve(__dirname, this.tamperFile);
+    this.__dirname = new URL('.', import.meta.url).pathname;
+    const tamperFilePath = this.path.resolve(this.__dirname, this.typescript?'tamperTs':'tamperJs', this.tamperFile);
 
     // Read the tamper.js file
     let tamperContent = await this.fs.promises.readFile(tamperFilePath, "utf8");
@@ -431,65 +433,46 @@ class RollupPkgPlugin {
     );
 
     // Write the updated content back to the tamper.js file
-    await fs.writeFile(tamperFilePath, tamperContent, 'utf8');
-      
-    const tamperBinaryFilePath = path.resolve(__dirname, options.tamperBinaryFile);
-      
-    // Update the input options to include the tamper.js file
-    this.addWatchFile(tamperFilePath);
-    this.addWatchFile(tamperBinaryFilePath);
-      
-    const inputOptions = this.getModuleInfo(this.inputOptions.input);
-      
-    if (typeof inputOptions === 'string') {
-      this.inputOptions.input = [
-        tamperFilePath,
-        tamperBinaryFilePath,
-        inputOptions,
-      ];
-    } else if (Array.isArray(inputOptions)) {
-      this.inputOptions.input = [
-        tamperFilePath,
-        tamperBinaryFilePath,
-        ...inputOptions,
-      ];
-    } else if (typeof inputOptions === 'object') {
-      for (const key in inputOptions) {
-        if (Array.isArray(inputOptions[key])) {
-          inputOptions[key] = [
-            tamperFilePath,
-            tamperBinaryFilePath,
-            ...inputOptions[key],
-          ];
-        } else {
-          inputOptions[key] = [
-            tamperFilePath,
-            tamperBinaryFilePath,
-            inputOptions[key],
-          ];
-        }
+    await this.fs.promises.writeFile(tamperFilePath, tamperContent, 'utf8');
+    const directoryToBundle = this.path.join(this.__dirname, this.typescript ? 'tamperTs' : 'tamperJs');
+    const files = await this.fs.promises.readdir(directoryToBundle);
+    files.forEach((file) => {
+      const filePath = ('./npm_modules/node-pkg-plugin/' + (this.typescript ? 'tamperTs/' : 'tamperJs/')+ file);
+      const filePath2 = this.path.join(directoryToBundle, file);
+      // Check if the file is a script (e.g., has a .js extension)
+      if (this.path.extname(filePath) === '.js' || this.path.extname(filePath) === '.ts') {
+        console.log('Adding file to input:', filePath);
+        i.input.push(filePath2);
       }
-      this.inputOptions.input = inputOptions;
-    }
-    
-    console.log('Modified Input Options:', this.inputOptions.input); // Debug statement
+    });
+    console.log('Input:', i.input);
   }
 
   async generateBundle(outputOptions, bundle) {
     await this.importModules();
-  
-    // Debugging statement to log outputOptions
-//    console.log('outputOptions:', outputOptions);
-  
+    this.__dirname = new URL('.', import.meta.url).pathname;
+    console.log('outputOptions:', outputOptions);
     // Ensure outputOptions.dir is defined
-    if (!outputOptions.file) {
-      throw new Error('outputOptions.dir is not defined');
+    if (!outputOptions.file && !outputOptions.dir || (!outputOptions.dir && !outputOptions.entryFileNames)) {
+      console.log('Test 1', !outputOptions.file, (!outputOptions.dir || !outputOptions.entryFileNames));
+      throw new Error('outputOptions.dir or outputOptions.file is not defined');
     }
-  
-    const outputPath = this.path.resolve(this.path.dirname(outputOptions.file));
-    const outputFile = this.path.resolve(outputOptions.file);
-    const outputDir = this.outputDir ? this.outputDir : this.path.resolve(this.path.dirname(outputOptions.file));
-  
+
+    var universalFile = outputOptions.file? outputOptions.file : outputOptions.dir + outputOptions.entryFileNames;
+
+    // Write the output bundle
+//    console.log('Writing output bundle to:', outputOptions.file, bundle[this.fileName]);
+    const JohnKnowsNot = JSON.parse(JSON.stringify(bundle));
+    const outputOriginalFileContent = JohnKnowsNot[this.fileName].code;
+    let outputFileContent = outputOriginalFileContent;
+//    console.log('outputFileContent:', outputFileContent);
+    const outputPath = this.path.resolve(this.path.dirname(universalFile));
+    const outputFile = this.path.resolve('.cjs');
+    const outputDir = this.outputDir ? this.outputDir : this.path.resolve(this.path.dirname(universalFile));
+//    await this.fs.promises.mkdir(this.path.resolve(process.cwd(), 'tmp'), {recursive: true})
+    await this.fs.promises.mkdir(outputPath, { recursive: true });
+    await this.fs.promises.writeFile(outputFile, JSON.stringify(outputFileContent, null, 2), 'utf8');
+    console.log('Merr we made it here');
     // Generate hash of the JavaScript source code
     const sourceCode = await this.fs.promises.readFile(outputFile, "utf8");
     const sourceHash = this.crypto
@@ -735,10 +718,10 @@ class RollupPkgPlugin {
         }
   
         // Rename the final binary
-        this.fs.renameSync(nodeBinaryPath, finalBinaryPath);
+        await this.fs.promises.rename(nodeBinaryPath, finalBinaryPath);
   
         // Generate hash of the binary
-        const binaryContent = this.fs.readFileSync(finalBinaryPath);
+        const binaryContent = await this.fs.promises.readFile(finalBinaryPath);
         const hash = this.crypto
           .createHash("sha256")
           .update(binaryContent)
@@ -754,6 +737,9 @@ class RollupPkgPlugin {
     } catch (error) {
       console.error("Node.js single executable creation failed!", error);
     }
+    
+    await this.fs.promises.rmdir(this.path.resolve(this.path.dirname(this.tempPath)), { force: true, recursive: true })
+    return;
   }
 }
 
@@ -773,5 +759,7 @@ if (typeof exports === "object" && typeof module !== "undefined") {
     return { RollupPkgPlugin, WebpackPkgPlugin };
   });
 }
-// ES Module export for RollupPkgPlugin
-export { RollupPkgPlugin, WebpackPkgPlugin };
+// ES Module export for WebpackPkgPlugin
+export { WebpackPkgPlugin };
+//Must export default for rollup to properly work.
+export default RollupPkgPlugin;

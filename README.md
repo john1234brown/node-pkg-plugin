@@ -2,6 +2,7 @@
 **NodePkgPlugin is a Webpack and Rollup plugin that generates single executable applications for multiple platforms (Linux, macOS, Windows) by leveraging Node.js SEA (Single Executable Applications) feature.**
 - ***Warning: The Final output binaries will include -hash.txt files if you plan to rename them you must rename the -hash.txt files if not the binaries won't work!***
 - ***Which the final output binary name is configurable see further below for more information on this!***
+- **Fully working Budnling of tamperproof for Rollup and Webpack as of version 1.1.6 and Fully working dual NPM module plugin for Webpack and Rollup**
 
 ## Installation
 
@@ -32,7 +33,7 @@ To use the NodePkgPlugin in your Webpack configuration, follow these steps:
         path: path.resolve(__dirname, 'dist')
      },
      plugins: [
-        new WebpackPkgPlugin('app.js', 'app-', true)//true if using typescript else don't add last parameter defaults to false for CommonJS javascript!
+        new WebpackPkgPlugin('app.js', 'app-', false)//true if using typescript else don't add last parameter defaults to false for CommonJS javascript!
      ]
   };
   ```
@@ -71,15 +72,16 @@ To use the NodePkgPlugin in your Rollup configuration, follow these steps:
   ```javascript
   import RollupPkgPlugin from 'node-pkg-plugin';
 
-  const rollupPkgPlugin = new RollupPkgPlugin('pheonix-box-cli.js', 'pheonix-box-cli-', true, 'production');
+  const rollupPkgPlugin = new RollupPkgPlugin('pheonix-box-cli.js', 'pheonix-box-cli-', false, 'production');
   //The final option parameter allows specifying the binarys to output to a different directory then your npm javascript file thats being bundled!
   //Also tamper proofs your javascript file as well! Enjoy! :D
 
   export default {
     input: 'src/index.js',
     output: {
-      file: 'dist/app.js',
-      format: 'cjs'
+      dir: 'dist',
+      format: 'cjs',
+      entryFileName: 'app.js'
     },
     plugins: [
       {
