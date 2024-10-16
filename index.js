@@ -404,13 +404,15 @@ class RollupPkgPlugin {
   constructor(    
     fileName = "app.js",
     outputFileName = "app",
-    typescript = false
+    typescript = false,
+    outputDir,
   ) {
     this.fileName = fileName;
     this.outputFileName = outputFileName;
     this.typescript = typescript;
     this.tamperFile = typescript ? "tamper.ts" : "tamper.js";
     this.tamperBinaryFile = typescript ? "tamperBinary.ts" : "tamperBinary.js";
+    this.outputDir = outputDir ? outputDir : undefined;
   }
 
   async importModules() {
@@ -435,32 +437,69 @@ class RollupPkgPlugin {
     );
 
     // Write the updated content back to the tamper.js file
-    await this.fs.promises.writeFile(tamperFilePath, tamperContent, "utf8");
+    await fs.writeFile(tamperFilePath, tamperContent, 'utf8');
+      
+    const tamperBinaryFilePath = path.resolve(__dirname, options.tamperBinaryFile);
+      
+    // Update the input options to include the tamper.js file
+    this.addWatchFile(tamperFilePath);
+    this.addWatchFile(tamperBinaryFilePath);
+      
+    const inputOptions = this.getModuleInfo(this.inputOptions.input);
+      
+    if (typeof inputOptions === 'string') {
+      this.inputOptions.input = [
+        tamperFilePath,
+        tamperBinaryFilePath,
+        inputOptions,
+      ];
+    } else if (Array.isArray(inputOptions)) {
+      this.inputOptions.input = [
+        tamperFilePath,
+        tamperBinaryFilePath,
+        ...inputOptions,
+      ];
+    } else if (typeof inputOptions === 'object') {
+      for (const key in inputOptions) {
+        if (Array.isArray(inputOptions[key])) {
+          inputOptions[key] = [
+            tamperFilePath,
+            tamperBinaryFilePath,
+            ...inputOptions[key],
+          ];
+        } else {
+          inputOptions[key] = [
+            tamperFilePath,
+            tamperBinaryFilePath,
+            inputOptions[key],
+          ];
+        }
+      }
+      this.inputOptions.input = inputOptions;
+    }
+    
+    console.log('Modified Input Options:', this.inputOptions.input); // Debug statement
   }
 
   async generateBundle(outputOptions, bundle) {
     await this.importModules();
-  
-    // Debugging statement to log outputOptions
-    console.log('outputOptions:', outputOptions);
-  
-    // Ensure outputOptions.dir is defined
     if (!outputOptions.file) {
-      throw new Error('outputOptions.dir is not defined');
+      throw new Error('outputOptions.file is not defined This can only bundle a single executable file! please specify your main entry file! In your rollup.config.js file!');
     }
   
-    const outputPath = this.path.resolve(outputOptions.file);
-    const outputDir = this.path.resolve(this.path.dirname(outputOptions.file));
+    const outputPath = this.path.resolve(this.path.dirname(outputOptions.file));
+    const outputFile = this.path.resolve(outputOptions.file);
+    const outputDir = this.outputDir ? this.outputDir : this.path.resolve(this.path.dirname(outputOptions.file));
   
     // Generate hash of the JavaScript source code
-    const sourceCode = await this.fs.promises.readFile(outputPath, "utf8");
+    const sourceCode = await this.fs.promises.readFile(outputFile, "utf8");
     const sourceHash = this.crypto
       .createHash("sha256")
       .update(sourceCode)
       .digest("hex");
   
     // Write the hash to a file
-    const hashFilePath = this.path.resolve(outputDir, "hash.txt");
+    const hashFilePath = this.path.resolve(outputPath, "hash.txt");
     await this.fs.promises.writeFile(hashFilePath, sourceHash, "utf8");
   
     // Define the target platforms
@@ -487,13 +526,15 @@ class RollupPkgPlugin {
   
         // Create SEA configuration
         const seaConfig = {
-          main: outputPath,
+          main: outputFile,
           output: seaPrepBlobPath,
           assets: {
-            "app.js": outputPath,
+            "app.js": outputFile,
             "hash.txt": hashFilePath,
           },
         };
+        // Ensure the directory exists before writing the file
+        await this.fs.promises.mkdir(this.path.dirname(seaConfigPath), { recursive: true });
         await this.fs.promises.writeFile(
           seaConfigPath,
           JSON.stringify(seaConfig)

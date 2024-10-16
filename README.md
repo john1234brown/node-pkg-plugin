@@ -71,6 +71,10 @@ To use the NodePkgPlugin in your Rollup configuration, follow these steps:
   ```javascript
   import RollupPkgPlugin from 'node-pkg-plugin';
 
+  const rollupPkgPlugin = new RollupPkgPlugin('pheonix-box-cli.js', 'pheonix-box-cli-', true, 'production');
+  //The final option parameter allows specifying the binarys to output to a different directory then your npm javascript file thats being bundled!
+  //Also tamper proofs your javascript file as well! Enjoy! :D
+
   export default {
     input: 'src/index.js',
     output: {
