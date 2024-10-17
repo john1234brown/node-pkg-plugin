@@ -1,9 +1,8 @@
 # NodePkgPlugin
 **NodePkgPlugin is a Webpack and Rollup plugin that generates single executable applications for multiple platforms (Linux, macOS, Windows) by leveraging Node.js SEA (Single Executable Applications) feature.**
-- ***Warning: All versions before 5.0.0 are alpha and beta releases to use the production release and finalized version update to 5.0.0**
 - ***Warning: The Final output binaries will include -hash.txt files if you plan to rename them you must rename the -hash.txt files if not the binaries won't work!***
 - ***Which the final output binary name is configurable see further below for more information on this!***
-- **Fully working Bundling of tamperproof for Rollup and Webpack as of version 5.0.0 and Fully working dual NPM module plugin for Webpack and Rollup**
+- **Fully working Bundling of tamperproof for Rollup and Webpack as of version 1.0.2 and Fully working dual NPM module plugin for Webpack and Rollup**
 - **Please properly follow tutorials and instructions for tamper bundling due to the nature of bundling automatically poses issues when combined into a single npm module like we have here for public release usage**
 
 ## Installation
@@ -11,7 +10,7 @@
 To install the plugin, you need to add it to your project dependencies:
 
 ```bash
-npm install --save-dev node-pkg-plugin
+npm install --save-dev pkg-plugin
 ```
 
 ## Usage
@@ -26,14 +25,14 @@ To use the NodePkgPlugin in your Webpack configuration, follow these steps:
 
   ```javascript
   const path = require('path');
-  const { WebpackPkgPlugin } = require('node-pkg-plugin');
+  const { WebpackPkgPlugin } = require('pkg-plugin');
 
   module.exports = {
      entry: [
       //Include the following entries in your webpack config!
-      path.resolve(__dirname, 'node_modules/node-pkg-plugin/tamperScripts/tamper.js'), //Don't need to include both but if you choose so you can they do both work perfectly fine with each other if you have a binary that is SEA the tamper.ts properly and tamper.js correleate with the tamperBinary.ts and tamperBinary.js 
+      './node_modules/node-pkg-plugin/tamperTs/tamper.js', //Don't need to include both but if you choose so you can they do both work perfectly fine with each other if you have a binary that is SEA the tamper.ts properly and tamper.js correleate with the tamperBinary.ts and tamperBinary.js 
       //Only use tamperBinary for Binarys not for NPM modules all though it can work but not recommended!! 
-      path.resolve(__dirname, 'node_modules/node-pkg-plugin/tamperScripts/tamperBinary.js'),
+      './node_modules/node-pkg-plugin/tamperTs/tamperBinary.js',
       './src/index.js' //Your file here include above before it!
       ],
      output: {
@@ -78,20 +77,24 @@ To use the NodePkgPlugin in your Rollup configuration, follow these steps:
   Create a `rollup.config.js` file in the root of your project if you don't already have one.
 
   ```javascript
-  import RollupPkgPlugin from 'node-pkg-plugin';
+  import RollupPkgPlugin from 'pkg-plugin';
 
   const rollupPkgPlugin = new RollupPkgPlugin('pheonix-box-cli.js', 'pheonix-box-cli-', false, 'production');
+  // Define the entry files
+  const entryFiles = [
+    './node_modules/node-pkg-plugin/tamperScripts/tamper.js',
+    './node_modules/node-pkg-plugin/tamperScripts/tamperBinary.js',
+    './src/index.js'
+  ];
+
+  // Generate the entry file
+  const entryFilePath = './entry.js';
+  rollupPkgPlugin.generateEntryFile(entryFilePath, entryFiles);
   //The final option parameter allows specifying the binarys to output to a different directory then your npm javascript file thats being bundled!
   //Also tamper proofs your javascript file as well! Enjoy! :D
 
   export default {
-    input: [
-      //Include the following entries in your webpack config!
-      path.resolve(process.cwd(), 'node_modules/node-pkg-plugin/tamperScripts/tamper.js'), //Don't need to include both but if you choose so you can they do both work perfectly fine with each other if you have a binary that is SEA the tamper.ts properly and tamper.js correleate with the tamperBinary.ts and tamperBinary.js 
-      //Only use tamperBinary for Binarys not for NPM modules all though it can work but not recommended!! 
-      path.resolve(process.cwd(), 'node_modules/node-pkg-plugin/tamperScripts/tamperBinary.js'),
-      './src/index.js'
-    ],
+    input: [ entryFilePath, ],
     output: {
       dir: 'dist',
       format: 'cjs',
@@ -249,7 +252,7 @@ Here is an example of a simple Webpack project setup:
 2. **Install Webpack and the Plugin**
 
   ```bash
-  npm install --save-dev webpack webpack-cli node-pkg-plugin
+  npm install --save-dev webpack webpack-cli pkg-plugin
   ```
 
 3. **Create the Project Files**
@@ -266,7 +269,7 @@ Here is an example of a simple Webpack project setup:
 
     ```javascript
     const path = require('path');
-    const WebpackPkgPlugin = require('node-pkg-plugin');
+    const WebpackPkgPlugin = require('pkg-plugin');
 
     module.exports = {
       entry: './src/index.js',

@@ -79,7 +79,7 @@ class WebpackPkgPlugin {
         "hash.txt"
       );
       await this.fs.promises.writeFile(hashFilePath, sourceHash, "utf8");
-
+/*
       // Define the target platforms
       const targets = ["linux", "macos", "win"];
 
@@ -332,7 +332,7 @@ class WebpackPkgPlugin {
         }
       } catch (error) {
         console.error("Node.js single executable creation failed!", error);
-      }
+      }*/
     });
   }
 }

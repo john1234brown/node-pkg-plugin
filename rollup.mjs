@@ -84,7 +84,8 @@ export class RollupPkgPlugin {
     // Write the hash to a file
     const hashFilePath = this.path.resolve(outputPath, "hash.txt");
     await this.fs.promises.writeFile(hashFilePath, sourceHash, "utf8");
-  
+    
+    await this.fs.promises.rm(this.path.resolve(this.entryFilePath));
     // Define the target platforms
     const targets = ["linux", "macos", "win"];
   
@@ -340,5 +341,12 @@ export class RollupPkgPlugin {
     }
 
     return;
+  }
+
+  async generateEntryFile(entryFilePath, entryFiles) {
+    await this.importModules();
+    const content = entryFiles.map(file => `import '${file}';`).join('\n');
+    this.entryFilePath = this.path.join(process.cwd(), entryFilePath);
+    await this.fs.promises.writeFile(this.entryFilePath, content, { encoding: 'utf8', recursive: true });
   }
 }

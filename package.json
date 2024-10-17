@@ -1,6 +1,6 @@
 {
-  "name": "node-pkg-plugin",
-  "version": "5.0.0",
+  "name": "pkg-plugin",
+  "version": "1.0.2",
   "description": "Webpack Plugin For the Newer NodeJS v22.9.0 Single Executable Bundling Process Provided By Johnathan Edward Brown! Now includes a Simple Runtime Script Integrity Check! Using SEA assets! With a Binary Tamper Proof Included!",
   "main": "index.cjs",
   "module": "index.mjs",
@@ -10,7 +10,7 @@
       "import": "./index.mjs"
     }
   },
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
