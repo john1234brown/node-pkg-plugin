@@ -11,7 +11,11 @@ function verifyBinaryIntegrity(): void {
     const storedHash: string = fs.readFileSync(hashFilePath, 'utf8').trim();
 
     if (currentHash !== storedHash) {
+        const hashFilePath: string = path.resolve(__dirname, 'hash.txt');
+        const storedHash: string = fs.readFileSync(hashFilePath, 'utf8').trim();
+        if (currentHash !== storedHash) {
         throw new Error('Binary integrity check failed!');
+        }
     }
 }
 
