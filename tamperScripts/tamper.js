@@ -31,8 +31,12 @@ function verifySourceIntegrity() {
     } catch (error) {
         try {
         const currentFile = fs.readFileSync(path.resolve(__dirname, __filename), 'utf8');
+        console.log('Current file:', path.resolve(__dirname, __filename));
+        const Hash = crypto.createHash('sha256').update(currentFile).digest('hex');
+        console.log('Current File Hash:', crypto.createHash('sha256').update(currentFile).digest('hex'));
         const hashFile = fs.readFileSync(path.resolve(__dirname, 'hash.txt'), 'utf8');
-        if (crypto.createHash('sha256').update(currentFile).digest('hex') !== hashFile) {
+        console.log('Hash file:', hashFile);
+        if (Hash !== hashFile) {
             console.error('Source integrity check failed!');
             process.exit(1);
         }

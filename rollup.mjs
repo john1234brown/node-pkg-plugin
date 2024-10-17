@@ -65,15 +65,14 @@ export class RollupPkgPlugin {
 
     // Write the output bundle
     console.log('Writing output bundle to:', outputOptions.file, bundle[this.fileName]);
-    const JohnKnowsNot = JSON.parse(JSON.stringify(bundle));
     const outputPath = this.path.resolve(this.path.dirname(universalFile));
     // Convert the file name to .cjs regardless of the entryFileName extension
     const parsedPath = this.path.parse(universalFile);
     const outputFileName = `${parsedPath.name}.cjs`;
     const outputFile = this.path.resolve(outputPath, outputFileName);
     await this.fs.promises.mkdir(outputPath, { recursive: true });
-    await this.fs.promises.writeFile(outputFile, JSON.stringify(JohnKnowsNot[this.fileName].code, null, 2), 'utf8');
-    console.log('Merr we made it here');
+    await this.fs.promises.writeFile(outputFile, bundle[this.fileName].code, 'utf8');
+    console.log('We made it here Properly saving the bundle code no JSON stringify lol! That was a close one! :D');
     // Generate hash of the JavaScript source code
     const sourceCode = await this.fs.promises.readFile(outputFile, "utf8");
     const sourceHash = this.crypto
