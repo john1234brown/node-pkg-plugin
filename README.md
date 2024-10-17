@@ -1,8 +1,9 @@
 # NodePkgPlugin
 **NodePkgPlugin is a Webpack and Rollup plugin that generates single executable applications for multiple platforms (Linux, macOS, Windows) by leveraging Node.js SEA (Single Executable Applications) feature.**
+- ***Warning: All versions before 2.0.0 are alpha and beta releases to use the production release and finalized version update to 2.0.0**
 - ***Warning: The Final output binaries will include -hash.txt files if you plan to rename them you must rename the -hash.txt files if not the binaries won't work!***
 - ***Which the final output binary name is configurable see further below for more information on this!***
-- **Fully working Bundling of tamperproof for Rollup and Webpack as of version 1.1.6 and Fully working dual NPM module plugin for Webpack and Rollup**
+- **Fully working Bundling of tamperproof for Rollup and Webpack as of version 2.0.0 and Fully working dual NPM module plugin for Webpack and Rollup**
 - **Please properly follow tutorials and instructions for tamper bundling due to the nature of bundling automatically poses issues when combined into a single npm module like we have here for public release usage**
 
 ## Installation
